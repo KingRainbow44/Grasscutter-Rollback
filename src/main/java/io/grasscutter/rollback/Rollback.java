@@ -23,6 +23,9 @@ public final class Rollback extends Plugin {
 
     @Override
     public void onEnable() {
+        this.getHandle().registerCommand(new RollbackCommand());
+        this.getHandle().registerCommand(new BackupCommand());
+
         this.getLogger().info("Rollback has been enabled.");
     }
 
