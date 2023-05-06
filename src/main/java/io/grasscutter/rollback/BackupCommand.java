@@ -11,7 +11,7 @@ import emu.grasscutter.game.player.Player;
 import java.util.List;
 
 @Command(label = "backup", aliases = {"bk"},
-        usage = "/backup", permission = "grasscutter.backup",
+        usage = "/backup [name]", permission = "grasscutter.backup",
         targetRequirement = Command.TargetRequirement.NONE,
         threading = true)
 public final class BackupCommand implements CommandHandler {
@@ -27,12 +27,13 @@ public final class BackupCommand implements CommandHandler {
         var serverDatabase = DatabaseManager.getAccountDatastore().getDatabase();
 
         // Save the databases to the backup.
+        var name = (args.size() > 0 ? args.get(0) : "bk") + "_";
         gameDatabase.aggregate(List.of(
-                new BasicDBObject("$out", "bk_" + gameDatabase.getName())));
+                new BasicDBObject("$out", name + gameDatabase.getName())));
         serverDatabase.aggregate(List.of(
-                new BasicDBObject("$out", "bk_" + serverDatabase.getName())));
+                new BasicDBObject("$out", name + serverDatabase.getName())));
 
-        sender.dropMessage("Backup executed!");
+        CommandHandler.sendMessage(sender, "Backup executed!");
 
         // Close the MongoDB clients.
         gameClient.close();
