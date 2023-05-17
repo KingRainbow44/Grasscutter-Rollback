@@ -26,12 +26,35 @@ public final class BackupCommand implements CommandHandler {
         var gameDatabase = DatabaseManager.getGameDatabase();
         var serverDatabase = DatabaseManager.getAccountDatastore().getDatabase();
 
-        // Save the databases to the backup.
+        // Create the collections.
         var name = (args.size() > 0 ? args.get(0) : "bk") + "_";
-        gameDatabase.aggregate(List.of(
-                new BasicDBObject("$out", name + gameDatabase.getName())));
-        serverDatabase.aggregate(List.of(
-                new BasicDBObject("$out", name + serverDatabase.getName())));
+        var newGame = gameClient.getDatabase(name + gameDatabase.getName());
+        var newServer = serverClient.getDatabase(name + serverDatabase.getName());
+
+        // Drop the databases.
+        newGame.drop();
+        newServer.drop();
+
+        // Copy all collections from the database to the new database.
+        for (var collectionName : gameDatabase.listCollectionNames()) {
+            var collection = gameDatabase.getCollection(collectionName);
+            var newCollection = newGame.getCollection(collectionName);
+
+            for (var document : collection.find()) {
+                newCollection.insertOne(document);
+            }
+        }
+
+        if (!gameDatabase.getName().equals(serverDatabase.getName())) {
+            for (var collectionName : serverDatabase.listCollectionNames()) {
+                var collection = serverDatabase.getCollection(collectionName);
+                var newCollection = newServer.getCollection(collectionName);
+
+                for (var document : collection.find()) {
+                    newCollection.insertOne(document);
+                }
+            }
+        }
 
         CommandHandler.sendMessage(sender, "Backup executed!");
 

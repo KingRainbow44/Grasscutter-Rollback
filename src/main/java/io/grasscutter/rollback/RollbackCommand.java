@@ -36,11 +36,26 @@ public final class RollbackCommand implements CommandHandler {
         gameDatabase.drop();
         serverDatabase.drop();
 
-        // Copy the databases from the backup.
-        gameBackup.aggregate(List.of(
-                new BasicDBObject("$out", gameDatabase.getName())));
-        serverBackup.aggregate(List.of(
-                new BasicDBObject("$out", serverDatabase.getName())));
+        // Copy all collections from the backup database to the new database.
+        for (var collectionName : gameBackup.listCollectionNames()) {
+            var collection = gameBackup.getCollection(collectionName);
+            var newCollection = gameDatabase.getCollection(collectionName);
+
+            for (var document : collection.find()) {
+                newCollection.insertOne(document);
+            }
+        }
+
+        if (!gameDatabase.getName().equals(serverDatabase.getName())) {
+            for (var collectionName : serverBackup.listCollectionNames()) {
+                var collection = serverBackup.getCollection(collectionName);
+                var newCollection = serverDatabase.getCollection(collectionName);
+
+                for (var document : collection.find()) {
+                    newCollection.insertOne(document);
+                }
+            }
+        }
 
         CommandHandler.sendMessage(sender, "Rollback executed!");
         Rollback.getPluginLogger().info("Rollback was completed by {}. Server is restarting in 1s.",
@@ -52,7 +67,7 @@ public final class RollbackCommand implements CommandHandler {
             } catch (InterruptedException ignored) { }
 
             System.exit(0);
-        });
+        }).start();
 
         // Close the MongoDB clients.
         gameClient.close();
