@@ -1,6 +1,5 @@
 package io.grasscutter.rollback;
 
-import com.mongodb.BasicDBObject;
 import com.mongodb.client.MongoClients;
 import emu.grasscutter.command.Command;
 import emu.grasscutter.command.CommandHandler;
