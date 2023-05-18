@@ -33,11 +33,6 @@ public final class FileCommand implements CommandHandler {
         // Try to find the specified file.
         var file = new File(Rollback.getInstance()
                 .getDataFolder(), args.get(0));
-        if (!file.canRead() || !file.canWrite()) {
-            CommandHandler.sendMessage(sender, "The specified file cannot be read or written to.");
-            return;
-        }
-
         // Perform the action depending on if the file exists.
         if (file.exists()) try (var reader = new FileReader(file)) {
             // Add collections from the file to the database.
