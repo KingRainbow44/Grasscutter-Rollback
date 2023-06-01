@@ -3,5 +3,6 @@
   "description": "A MongoDB rollback plugin.",
   "mainClass": "io.grasscutter.rollback.Rollback",
   "author": "KingRainbow44",
-  "version": "1.0"
+  "version": "1.0",
+  "api": 2
 }
